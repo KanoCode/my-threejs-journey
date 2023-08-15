@@ -2,9 +2,14 @@ import {
   Scene,
   BoxGeometry,
   MeshBasicMaterial,
+  MeshLambertMaterial,
+  MeshPhongMaterial,
   Mesh,
+  Light,
   PerspectiveCamera,
+  DirectionalLight,
   WebGLRenderer,
+  TextureLoader,
   // import these for camera controls to work
   MOUSE,
   Vector2,
@@ -60,8 +65,20 @@ const scene = new Scene();
 
 // 2 The Object
 const geometry = new BoxGeometry(0.5, 0.5, 0.5);
-const orangeMaterial = new MeshBasicMaterial({ color: "orange" });
-const blueMaterial = new MeshBasicMaterial({ color: "blue" });
+const imgTexture = new TextureLoader();
+const orangeMaterial = new MeshLambertMaterial({
+  color: 0x8800ff,
+});
+// const orangeMaterial = new MeshPhongMaterial({
+//   color: 0xff0000,
+//   specular: 0xffffff,
+//   shininess: 100,
+//   flatshading: true,
+// });
+const blueMaterial = new MeshLambertMaterial({
+  color: "orange",
+  map: imgTexture.load("./sample.jpg"),
+});
 const orangeCube = new Mesh(geometry, orangeMaterial);
 scene.add(orangeCube);
 
@@ -77,6 +94,15 @@ scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
 
+//lights
+
+const light = new DirectionalLight();
+light.position.set(3, 2, 1).normalize();
+scene.add(light);
+
+const light1 = new DirectionalLight();
+light1.position.set(-3, -2, -1).normalize();
+scene.add(light1);
 // animation
 function animate() {
   const delta = clock.getDelta();
