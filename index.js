@@ -5,9 +5,22 @@ import {
   Mesh,
   PerspectiveCamera,
   WebGLRenderer,
+  // import these for camera controls to work
+  MOUSE,
+  Vector2,
+  Vector3,
+  Vector4,
+  Quaternion,
+  Matrix4,
+  Box3,
+  Spherical,
+  Sphere,
+  Raycaster,
+  MathUtils,
+  Clock,
 } from "three";
 
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import CameraControls from "camera-controls";
 
 // The Camera
 const sizes = {
@@ -16,8 +29,31 @@ const sizes = {
 };
 const canvas = document.getElementById("three-canvas");
 
+const subsetOfTHREE = {
+  MOUSE,
+  Vector2,
+  Vector3,
+  Vector4,
+  Quaternion,
+  Matrix4,
+  Spherical,
+  Box3,
+  Sphere,
+  Raycaster,
+  MathUtils: {
+    DEG2RAD: MathUtils.DEG2RAD,
+    clamp: MathUtils.clamp,
+  },
+};
+
 const camera = new PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 2;
+
+CameraControls.install({ THREE: subsetOfTHREE });
+
+const clock = new Clock();
+const cameraControls = new CameraControls(camera, canvas);
+cameraControls.dollyToCursor = true;
 
 // 1 The scene
 const scene = new Scene();
@@ -41,14 +77,13 @@ scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
 
-// camera controls
-
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-
 // animation
 function animate() {
-  controls.update();
+  const delta = clock.getDelta();
+  cameraControls.update(delta);
+  // if you want to rotate the objects uncomment the lines below
+  // orangeCube.rotation.x += 0.04;
+  // bigBlueCube.rotation.y += 0.03
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
