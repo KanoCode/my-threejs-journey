@@ -29976,6 +29976,138 @@ class Scene extends Object3D {
 
 }
 
+class SphereGeometry extends BufferGeometry {
+
+	constructor( radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI ) {
+
+		super();
+
+		this.type = 'SphereGeometry';
+
+		this.parameters = {
+			radius: radius,
+			widthSegments: widthSegments,
+			heightSegments: heightSegments,
+			phiStart: phiStart,
+			phiLength: phiLength,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+		widthSegments = Math.max( 3, Math.floor( widthSegments ) );
+		heightSegments = Math.max( 2, Math.floor( heightSegments ) );
+
+		const thetaEnd = Math.min( thetaStart + thetaLength, Math.PI );
+
+		let index = 0;
+		const grid = [];
+
+		const vertex = new Vector3();
+		const normal = new Vector3();
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// generate vertices, normals and uvs
+
+		for ( let iy = 0; iy <= heightSegments; iy ++ ) {
+
+			const verticesRow = [];
+
+			const v = iy / heightSegments;
+
+			// special case for the poles
+
+			let uOffset = 0;
+
+			if ( iy === 0 && thetaStart === 0 ) {
+
+				uOffset = 0.5 / widthSegments;
+
+			} else if ( iy === heightSegments && thetaEnd === Math.PI ) {
+
+				uOffset = - 0.5 / widthSegments;
+
+			}
+
+			for ( let ix = 0; ix <= widthSegments; ix ++ ) {
+
+				const u = ix / widthSegments;
+
+				// vertex
+
+				vertex.x = - radius * Math.cos( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
+				vertex.y = radius * Math.cos( thetaStart + v * thetaLength );
+				vertex.z = radius * Math.sin( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+				// normal
+
+				normal.copy( vertex ).normalize();
+				normals.push( normal.x, normal.y, normal.z );
+
+				// uv
+
+				uvs.push( u + uOffset, 1 - v );
+
+				verticesRow.push( index ++ );
+
+			}
+
+			grid.push( verticesRow );
+
+		}
+
+		// indices
+
+		for ( let iy = 0; iy < heightSegments; iy ++ ) {
+
+			for ( let ix = 0; ix < widthSegments; ix ++ ) {
+
+				const a = grid[ iy ][ ix + 1 ];
+				const b = grid[ iy ][ ix ];
+				const c = grid[ iy + 1 ][ ix ];
+				const d = grid[ iy + 1 ][ ix + 1 ];
+
+				if ( iy !== 0 || thetaStart > 0 ) indices.push( a, b, d );
+				if ( iy !== heightSegments - 1 || thetaEnd < Math.PI ) indices.push( b, c, d );
+
+			}
+
+		}
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.parameters = Object.assign( {}, source.parameters );
+
+		return this;
+
+	}
+
+	static fromJSON( data ) {
+
+		return new SphereGeometry( data.radius, data.widthSegments, data.heightSegments, data.phiStart, data.phiLength, data.thetaStart, data.thetaLength );
+
+	}
+
+}
+
 class MeshLambertMaterial extends Material {
 
 	constructor( parameters ) {
@@ -33452,22 +33584,29 @@ cameraControls.dollyToCursor = true;
 const scene = new Scene();
 
 // 2 The Object
-const geometry = new BoxGeometry(0.5, 0.5, 0.5);
+const geometry = new SphereGeometry(0.5);
+
 new TextureLoader();
-const orangeMaterial = new MeshLambertMaterial();
-// const orangeMaterial = new MeshPhongMaterial({
-//   color: 0xff0000,
-//   specular: 0xffffff,
-//   shininess: 100,
-//   flatshading: true,
-// });
+const solarSystem = new Object3D();
+scene.add(solarSystem);
 
-const orangeCube = new Mesh(geometry, orangeMaterial);
+const sunMaterial = new MeshLambertMaterial({ color: "yellow" });
+const sunMesh = new Mesh(geometry, sunMaterial);
+// sunMesh.scale.set(0.3,0.3,0.3)
+solarSystem.add(sunMesh);
 
-// const bigBlueCube = new Mesh(geometry, blueMaterial);
-orangeCube.position.x += 1;
-// bigBlueCube.scale.set(2, 2, 2);
-scene.add(orangeCube);
+const earthMaterial = new MeshBasicMaterial({ color: "blue" });
+const earthMesh = new Mesh(geometry, earthMaterial);
+earthMesh.position.set(2, 0, 0);
+earthMesh.scale.set(0.2,0.2,0.2);
+sunMesh.add(earthMesh);
+
+const moonMaterial = new MeshBasicMaterial({ color: "white" });
+const moonMesh = new Mesh(geometry, moonMaterial);
+moonMesh.scale.set(0.5, 0.5, 0.5);
+moonMesh.position.set(1, 0, 0);
+earthMesh.add(moonMesh);
+
 
 const renderer = new WebGLRenderer({
   canvas,
@@ -33476,11 +33615,6 @@ scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
 
-//lights
-
-// const light = new DirectionalLight();
-// light.position.set(3, 2, 1).normalize();
-// scene.add(light);
 
 const skyColor = 0xb1e1ff;
 const groundColor = 0xb97a20;
@@ -33488,12 +33622,11 @@ const intensity = 1;
 const newlight = new HemisphereLight(skyColor, groundColor, intensity);
 scene.add(newlight);
 
-// let hemisphereLight = new HemisphereLight('pink','white', 1); // applies light across the evenly
-
-// scene.add(hemisphereLight);
 
 // animation
 function animate() {
+  sunMesh.rotation.y += 0.005;
+  earthMesh.rotation.y += 0.05;
   const delta = clock.getDelta();
   cameraControls.update(delta);
   // if you want to rotate the objects uncomment the lines below

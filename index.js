@@ -1,6 +1,7 @@
 import {
   Scene,
   BoxGeometry,
+  SphereGeometry,
   MeshBasicMaterial,
   MeshLambertMaterial,
   MeshPhongMaterial,
@@ -11,6 +12,7 @@ import {
   WebGLRenderer,
   TextureLoader,
   HemisphereLight,
+  Object3D,
   // import these for camera controls to work
   MOUSE,
   Vector2,
@@ -65,22 +67,29 @@ cameraControls.dollyToCursor = true;
 const scene = new Scene();
 
 // 2 The Object
-const geometry = new BoxGeometry(0.5, 0.5, 0.5);
+const geometry = new SphereGeometry(0.5);
+
 const imgTexture = new TextureLoader();
-const orangeMaterial = new MeshLambertMaterial();
-// const orangeMaterial = new MeshPhongMaterial({
-//   color: 0xff0000,
-//   specular: 0xffffff,
-//   shininess: 100,
-//   flatshading: true,
-// });
+const solarSystem = new Object3D();
+scene.add(solarSystem);
 
-const orangeCube = new Mesh(geometry, orangeMaterial);
+const sunMaterial = new MeshLambertMaterial({ color: "yellow" });
+const sunMesh = new Mesh(geometry, sunMaterial);
+// sunMesh.scale.set(0.3,0.3,0.3)
+solarSystem.add(sunMesh);
 
-// const bigBlueCube = new Mesh(geometry, blueMaterial);
-orangeCube.position.x += 1;
-// bigBlueCube.scale.set(2, 2, 2);
-scene.add(orangeCube);
+const earthMaterial = new MeshBasicMaterial({ color: "blue" });
+const earthMesh = new Mesh(geometry, earthMaterial);
+earthMesh.position.set(2, 0, 0);
+earthMesh.scale.set(0.2,0.2,0.2)
+sunMesh.add(earthMesh);
+
+const moonMaterial = new MeshBasicMaterial({ color: "white" });
+const moonMesh = new Mesh(geometry, moonMaterial);
+moonMesh.scale.set(0.5, 0.5, 0.5);
+moonMesh.position.set(1, 0, 0);
+earthMesh.add(moonMesh);
+
 
 const renderer = new WebGLRenderer({
   canvas,
@@ -89,11 +98,6 @@ scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
 
-//lights
-
-// const light = new DirectionalLight();
-// light.position.set(3, 2, 1).normalize();
-// scene.add(light);
 
 const skyColor = 0xb1e1ff;
 const groundColor = 0xb97a20;
@@ -101,12 +105,11 @@ const intensity = 1;
 const newlight = new HemisphereLight(skyColor, groundColor, intensity);
 scene.add(newlight);
 
-// let hemisphereLight = new HemisphereLight('pink','white', 1); // applies light across the evenly
-
-// scene.add(hemisphereLight);
 
 // animation
 function animate() {
+  sunMesh.rotation.y += 0.005;
+  earthMesh.rotation.y += 0.05;
   const delta = clock.getDelta();
   cameraControls.update(delta);
   // if you want to rotate the objects uncomment the lines below
