@@ -33587,18 +33587,16 @@ const scene = new Scene();
 const geometry = new SphereGeometry(0.5);
 
 new TextureLoader();
-const solarSystem = new Object3D();
-scene.add(solarSystem);
 
 const sunMaterial = new MeshLambertMaterial({ color: "yellow" });
 const sunMesh = new Mesh(geometry, sunMaterial);
-// sunMesh.scale.set(0.3,0.3,0.3)
-solarSystem.add(sunMesh);
+
+scene.add(sunMesh);
 
 const earthMaterial = new MeshBasicMaterial({ color: "blue" });
 const earthMesh = new Mesh(geometry, earthMaterial);
 earthMesh.position.set(2, 0, 0);
-earthMesh.scale.set(0.2,0.2,0.2);
+earthMesh.scale.set(0.2, 0.2, 0.2);
 sunMesh.add(earthMesh);
 
 const moonMaterial = new MeshBasicMaterial({ color: "white" });
@@ -33607,7 +33605,6 @@ moonMesh.scale.set(0.5, 0.5, 0.5);
 moonMesh.position.set(1, 0, 0);
 earthMesh.add(moonMesh);
 
-
 const renderer = new WebGLRenderer({
   canvas,
 });
@@ -33615,13 +33612,11 @@ scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
 
-
 const skyColor = 0xb1e1ff;
 const groundColor = 0xb97a20;
 const intensity = 1;
 const newlight = new HemisphereLight(skyColor, groundColor, intensity);
 scene.add(newlight);
-
 
 // animation
 function animate() {
