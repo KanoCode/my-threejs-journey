@@ -10,6 +10,7 @@ import {
   PerspectiveCamera,
   DirectionalLight,
   WebGLRenderer,
+  AxesHelper,
   TextureLoader,
   HemisphereLight,
   // import these for camera controls to work
@@ -66,26 +67,29 @@ cameraControls.dollyToCursor = true;
 const scene = new Scene();
 
 // 2 The Object
-const geometry = new SphereGeometry(0.5);
+const geometry = new BoxGeometry(3,3,3);
 
 const imgTexture = new TextureLoader();
 
-const sunMaterial = new MeshLambertMaterial({ color: "yellow" });
-const sunMesh = new Mesh(geometry, sunMaterial);
+const boxLambertMaterial = new MeshLambertMaterial({ color: "yellow" });
+const box = new Mesh(geometry, boxLambertMaterial);
+box.position.x += 2;
+scene.add(box);
 
-scene.add(sunMesh);
+// add axes-helper
+const axes = new AxesHelper();
+axes.material.depthTest = false;
+axes.renderOrder = 2;
+scene.add(axes);
 
-const earthMaterial = new MeshBasicMaterial({ color: "blue" });
-const earthMesh = new Mesh(geometry, earthMaterial);
-earthMesh.position.set(2, 0, 0);
-earthMesh.scale.set(0.2, 0.2, 0.2);
-sunMesh.add(earthMesh);
 
-const moonMaterial = new MeshBasicMaterial({ color: "white" });
-const moonMesh = new Mesh(geometry, moonMaterial);
-moonMesh.scale.set(0.5, 0.5, 0.5);
-moonMesh.position.set(1, 0, 0);
-earthMesh.add(moonMesh);
+const cubeAxes = new AxesHelper(0.5);
+cubeAxes.material.depthTest = false;
+cubeAxes.renderOrder = 2;
+box.add(cubeAxes);
+
+
+
 
 const renderer = new WebGLRenderer({
   canvas,
@@ -102,13 +106,11 @@ scene.add(newlight);
 
 // animation
 function animate() {
-  sunMesh.rotation.y += 0.005;
-  earthMesh.rotation.y += 0.05;
+  // sunMesh.rotation.y += 0.005;
+  // earthMesh.rotation.y += 0.05;
   const delta = clock.getDelta();
   cameraControls.update(delta);
-  // if you want to rotate the objects uncomment the lines below
-  // orangeCube.rotation.x += 0.04;
-  // bigBlueCube.rotation.y += 0.03
+  box.rotation.y += 0.01
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
