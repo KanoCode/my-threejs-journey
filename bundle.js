@@ -30510,205 +30510,30 @@ class Light extends Object3D {
 
 }
 
-const _projScreenMatrix$1 = /*@__PURE__*/ new Matrix4();
-const _lightPositionWorld$1 = /*@__PURE__*/ new Vector3();
-const _lookTarget$1 = /*@__PURE__*/ new Vector3();
+class HemisphereLight extends Light {
 
-class LightShadow {
+	constructor( skyColor, groundColor, intensity ) {
 
-	constructor( camera ) {
+		super( skyColor, intensity );
 
-		this.camera = camera;
+		this.isHemisphereLight = true;
 
-		this.bias = 0;
-		this.normalBias = 0;
-		this.radius = 1;
-		this.blurSamples = 8;
-
-		this.mapSize = new Vector2( 512, 512 );
-
-		this.map = null;
-		this.mapPass = null;
-		this.matrix = new Matrix4();
-
-		this.autoUpdate = true;
-		this.needsUpdate = false;
-
-		this._frustum = new Frustum();
-		this._frameExtents = new Vector2( 1, 1 );
-
-		this._viewportCount = 1;
-
-		this._viewports = [
-
-			new Vector4( 0, 0, 1, 1 )
-
-		];
-
-	}
-
-	getViewportCount() {
-
-		return this._viewportCount;
-
-	}
-
-	getFrustum() {
-
-		return this._frustum;
-
-	}
-
-	updateMatrices( light ) {
-
-		const shadowCamera = this.camera;
-		const shadowMatrix = this.matrix;
-
-		_lightPositionWorld$1.setFromMatrixPosition( light.matrixWorld );
-		shadowCamera.position.copy( _lightPositionWorld$1 );
-
-		_lookTarget$1.setFromMatrixPosition( light.target.matrixWorld );
-		shadowCamera.lookAt( _lookTarget$1 );
-		shadowCamera.updateMatrixWorld();
-
-		_projScreenMatrix$1.multiplyMatrices( shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse );
-		this._frustum.setFromProjectionMatrix( _projScreenMatrix$1 );
-
-		shadowMatrix.set(
-			0.5, 0.0, 0.0, 0.5,
-			0.0, 0.5, 0.0, 0.5,
-			0.0, 0.0, 0.5, 0.5,
-			0.0, 0.0, 0.0, 1.0
-		);
-
-		shadowMatrix.multiply( _projScreenMatrix$1 );
-
-	}
-
-	getViewport( viewportIndex ) {
-
-		return this._viewports[ viewportIndex ];
-
-	}
-
-	getFrameExtents() {
-
-		return this._frameExtents;
-
-	}
-
-	dispose() {
-
-		if ( this.map ) {
-
-			this.map.dispose();
-
-		}
-
-		if ( this.mapPass ) {
-
-			this.mapPass.dispose();
-
-		}
-
-	}
-
-	copy( source ) {
-
-		this.camera = source.camera.clone();
-
-		this.bias = source.bias;
-		this.radius = source.radius;
-
-		this.mapSize.copy( source.mapSize );
-
-		return this;
-
-	}
-
-	clone() {
-
-		return new this.constructor().copy( this );
-
-	}
-
-	toJSON() {
-
-		const object = {};
-
-		if ( this.bias !== 0 ) object.bias = this.bias;
-		if ( this.normalBias !== 0 ) object.normalBias = this.normalBias;
-		if ( this.radius !== 1 ) object.radius = this.radius;
-		if ( this.mapSize.x !== 512 || this.mapSize.y !== 512 ) object.mapSize = this.mapSize.toArray();
-
-		object.camera = this.camera.toJSON( false ).object;
-		delete object.camera.matrix;
-
-		return object;
-
-	}
-
-}
-
-class DirectionalLightShadow extends LightShadow {
-
-	constructor() {
-
-		super( new OrthographicCamera( - 5, 5, 5, - 5, 0.5, 500 ) );
-
-		this.isDirectionalLightShadow = true;
-
-	}
-
-}
-
-class DirectionalLight extends Light {
-
-	constructor( color, intensity ) {
-
-		super( color, intensity );
-
-		this.isDirectionalLight = true;
-
-		this.type = 'DirectionalLight';
+		this.type = 'HemisphereLight';
 
 		this.position.copy( Object3D.DEFAULT_UP );
 		this.updateMatrix();
 
-		this.target = new Object3D();
-
-		this.shadow = new DirectionalLightShadow();
+		this.groundColor = new Color( groundColor );
 
 	}
 
-	dispose() {
+	copy( source, recursive ) {
 
-		this.shadow.dispose();
+		super.copy( source, recursive );
 
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.target = source.target.clone();
-		this.shadow = source.shadow.clone();
+		this.groundColor.copy( source.groundColor );
 
 		return this;
-
-	}
-
-}
-
-class AmbientLight extends Light {
-
-	constructor( color, intensity ) {
-
-		super( color, intensity );
-
-		this.isAmbientLight = true;
-
-		this.type = 'AmbientLight';
 
 	}
 
@@ -33628,27 +33453,21 @@ const scene = new Scene();
 
 // 2 The Object
 const geometry = new BoxGeometry(0.5, 0.5, 0.5);
-const imgTexture = new TextureLoader();
-const orangeMaterial = new MeshLambertMaterial({
-  color: 0x8800ff,
-});
+new TextureLoader();
+const orangeMaterial = new MeshLambertMaterial();
 // const orangeMaterial = new MeshPhongMaterial({
 //   color: 0xff0000,
 //   specular: 0xffffff,
 //   shininess: 100,
 //   flatshading: true,
 // });
-const blueMaterial = new MeshLambertMaterial({
-  color: "orange",
-  map: imgTexture.load("./sample.jpg"),
-});
-const orangeCube = new Mesh(geometry, orangeMaterial);
-scene.add(orangeCube);
 
-const bigBlueCube = new Mesh(geometry, blueMaterial);
-bigBlueCube.position.x += 1;
-bigBlueCube.scale.set(2, 2, 2);
-scene.add(bigBlueCube);
+const orangeCube = new Mesh(geometry, orangeMaterial);
+
+// const bigBlueCube = new Mesh(geometry, blueMaterial);
+orangeCube.position.x += 1;
+// bigBlueCube.scale.set(2, 2, 2);
+scene.add(orangeCube);
 
 const renderer = new WebGLRenderer({
   canvas,
@@ -33659,14 +33478,19 @@ renderer.setSize(sizes.width, sizes.height);
 
 //lights
 
-const light = new DirectionalLight();
-light.position.set(3, 2, 1).normalize();
-scene.add(light);
+// const light = new DirectionalLight();
+// light.position.set(3, 2, 1).normalize();
+// scene.add(light);
 
-let ambientLight = new AmbientLight(0xffffff, 1); // applies light across the evenly
+const skyColor = 0xb1e1ff;
+const groundColor = 0xb97a20;
+const intensity = 1;
+const newlight = new HemisphereLight(skyColor, groundColor, intensity);
+scene.add(newlight);
 
-scene.add(ambientLight);
+// let hemisphereLight = new HemisphereLight('pink','white', 1); // applies light across the evenly
 
+// scene.add(hemisphereLight);
 
 // animation
 function animate() {

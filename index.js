@@ -10,7 +10,7 @@ import {
   DirectionalLight,
   WebGLRenderer,
   TextureLoader,
-  AmbientLight,
+  HemisphereLight,
   // import these for camera controls to work
   MOUSE,
   Vector2,
@@ -67,26 +67,20 @@ const scene = new Scene();
 // 2 The Object
 const geometry = new BoxGeometry(0.5, 0.5, 0.5);
 const imgTexture = new TextureLoader();
-const orangeMaterial = new MeshLambertMaterial({
-  color: 0x8800ff,
-});
+const orangeMaterial = new MeshLambertMaterial();
 // const orangeMaterial = new MeshPhongMaterial({
 //   color: 0xff0000,
 //   specular: 0xffffff,
 //   shininess: 100,
 //   flatshading: true,
 // });
-const blueMaterial = new MeshLambertMaterial({
-  color: "orange",
-  map: imgTexture.load("./sample.jpg"),
-});
-const orangeCube = new Mesh(geometry, orangeMaterial);
-scene.add(orangeCube);
 
-const bigBlueCube = new Mesh(geometry, blueMaterial);
-bigBlueCube.position.x += 1;
-bigBlueCube.scale.set(2, 2, 2);
-scene.add(bigBlueCube);
+const orangeCube = new Mesh(geometry, orangeMaterial);
+
+// const bigBlueCube = new Mesh(geometry, blueMaterial);
+orangeCube.position.x += 1;
+// bigBlueCube.scale.set(2, 2, 2);
+scene.add(orangeCube);
 
 const renderer = new WebGLRenderer({
   canvas,
@@ -97,14 +91,19 @@ renderer.setSize(sizes.width, sizes.height);
 
 //lights
 
-const light = new DirectionalLight();
-light.position.set(3, 2, 1).normalize();
-scene.add(light);
+// const light = new DirectionalLight();
+// light.position.set(3, 2, 1).normalize();
+// scene.add(light);
 
-let ambientLight = new AmbientLight(0xffffff, 1); // applies light across the evenly
+const skyColor = 0xb1e1ff;
+const groundColor = 0xb97a20;
+const intensity = 1;
+const newlight = new HemisphereLight(skyColor, groundColor, intensity);
+scene.add(newlight);
 
-scene.add(ambientLight);
+// let hemisphereLight = new HemisphereLight('pink','white', 1); // applies light across the evenly
 
+// scene.add(hemisphereLight);
 
 // animation
 function animate() {
