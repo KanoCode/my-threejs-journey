@@ -30700,6 +30700,20 @@ class DirectionalLight extends Light {
 
 }
 
+class AmbientLight extends Light {
+
+	constructor( color, intensity ) {
+
+		super( color, intensity );
+
+		this.isAmbientLight = true;
+
+		this.type = 'AmbientLight';
+
+	}
+
+}
+
 class Clock {
 
 	constructor( autoStart = true ) {
@@ -33649,9 +33663,11 @@ const light = new DirectionalLight();
 light.position.set(3, 2, 1).normalize();
 scene.add(light);
 
-const light1 = new DirectionalLight();
-light1.position.set(-3, -2, -1).normalize();
-scene.add(light1);
+let ambientLight = new AmbientLight(0xffffff, 1); // applies light across the evenly
+
+scene.add(ambientLight);
+
+
 // animation
 function animate() {
   const delta = clock.getDelta();

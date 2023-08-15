@@ -10,6 +10,7 @@ import {
   DirectionalLight,
   WebGLRenderer,
   TextureLoader,
+  AmbientLight,
   // import these for camera controls to work
   MOUSE,
   Vector2,
@@ -100,9 +101,11 @@ const light = new DirectionalLight();
 light.position.set(3, 2, 1).normalize();
 scene.add(light);
 
-const light1 = new DirectionalLight();
-light1.position.set(-3, -2, -1).normalize();
-scene.add(light1);
+let ambientLight = new AmbientLight(0xffffff, 1); // applies light across the evenly
+
+scene.add(ambientLight);
+
+
 // animation
 function animate() {
   const delta = clock.getDelta();
