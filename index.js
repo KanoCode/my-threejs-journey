@@ -29,6 +29,8 @@ import {
   Clock,
 } from "three";
 
+import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
+
 import CameraControls from "camera-controls";
 
 // The Camera
@@ -101,18 +103,39 @@ renderer.setSize(sizes.width, sizes.height);
 
 const skyColor = 0xb1e1ff;
 const groundColor = 0xb97a20;
-const intensity = 1;
+const intensity = 2;
 const newlight = new HemisphereLight(skyColor, groundColor, intensity);
 scene.add(newlight);
 
 // animation
 function animate() {
-  // sunMesh.rotation.y += 0.005;
-  // earthMesh.rotation.y += 0.05;
   const delta = clock.getDelta();
   cameraControls.update(delta);
-  box.rotation.y += 0.01;
+
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
 animate();
+
+//debugging
+
+// an interface for mocking purposes
+const gui = new GUI();
+
+const min = -3;
+const max = 3;
+const step = 0.01;
+// gui.add(box.position, "y", min, max, step);
+
+// gui.add(box.position, "x", min, max, step);
+
+// gui.add(box.position, "z", min, max, step);
+
+gui.addFolder("Visibility").add(box, "visible");
+
+const transformationFolder = gui.addFolder("Transformation");
+transformationFolder.add(box.position, "y", min, max, step).name("y-axis");
+transformationFolder.add(box.position, "x", min, max, step).name("x-axis");
+transformationFolder.add(box.position, "z", min, max, step).name("z-axis");
+
+
