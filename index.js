@@ -9,11 +9,13 @@ import {
   Light,
   PerspectiveCamera,
   DirectionalLight,
+  HemisphereLight,
   WebGLRenderer,
   AxesHelper,
   GridHelper,
   TextureLoader,
-  HemisphereLight,
+  // HemisphereLight,
+  AmbientLight,
   // import these for camera controls to work
   MOUSE,
   Vector2,
@@ -28,6 +30,8 @@ import {
   MathUtils,
   Clock,
 } from "three";
+
+import gsap from "gsap";
 
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 
@@ -76,8 +80,12 @@ const geometry = new BoxGeometry(3, 3, 3);
 
 const imgTexture = new TextureLoader();
 
-const boxLambertMaterial = new MeshLambertMaterial({ color: "yellow" });
-const box = new Mesh(geometry, boxLambertMaterial);
+const boxMaterial = new MeshPhongMaterial({
+  specular: 0x852e2e,
+  color: 0xffffff,
+  shininess: 20,
+});
+const box = new Mesh(geometry, boxMaterial);
 box.position.x += 2;
 scene.add(box);
 
@@ -125,11 +133,6 @@ const gui = new GUI();
 const min = -3;
 const max = 3;
 const step = 0.01;
-// gui.add(box.position, "y", min, max, step);
-
-// gui.add(box.position, "x", min, max, step);
-
-// gui.add(box.position, "z", min, max, step);
 
 gui.addFolder("Visibility").add(box, "visible");
 
@@ -138,4 +141,21 @@ transformationFolder.add(box.position, "y", min, max, step).name("y-axis");
 transformationFolder.add(box.position, "x", min, max, step).name("x-axis");
 transformationFolder.add(box.position, "z", min, max, step).name("z-axis");
 
+const colorParam = {
+  value: 0xff0000,
+};
 
+gui
+  .addColor(colorParam, "value")
+  .name("Color")
+  .onChange(() => {
+    box.material.color.set(colorParam.value);
+  });
+
+const functionParam = {
+  spin: () => {
+    gsap.to(box.rotation, { y: box.rotation.y + 10, duration: 1 });
+  },
+};
+
+gui.add(functionParam, "spin");
