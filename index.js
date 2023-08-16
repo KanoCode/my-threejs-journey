@@ -11,6 +11,7 @@ import {
   DirectionalLight,
   WebGLRenderer,
   AxesHelper,
+  GridHelper,
   TextureLoader,
   HemisphereLight,
   // import these for camera controls to work
@@ -56,6 +57,8 @@ const subsetOfTHREE = {
 
 const camera = new PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 2;
+camera.position.x = 6;
+camera.position.y = 4;
 
 CameraControls.install({ THREE: subsetOfTHREE });
 
@@ -67,7 +70,7 @@ cameraControls.dollyToCursor = true;
 const scene = new Scene();
 
 // 2 The Object
-const geometry = new BoxGeometry(3,3,3);
+const geometry = new BoxGeometry(3, 3, 3);
 
 const imgTexture = new TextureLoader();
 
@@ -82,18 +85,16 @@ axes.material.depthTest = false;
 axes.renderOrder = 2;
 scene.add(axes);
 
-
-const cubeAxes = new AxesHelper(0.5);
-cubeAxes.material.depthTest = false;
-cubeAxes.renderOrder = 2;
-box.add(cubeAxes);
-
-
-
+const grid = new GridHelper();
+grid.material.depthTest = false;
+grid.renderOrder = 2;
+scene.add(grid);
 
 const renderer = new WebGLRenderer({
   canvas,
 });
+// to change the background color use the code below
+renderer.setClearColor(0x3e3e3e, 1);
 scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
@@ -110,7 +111,7 @@ function animate() {
   // earthMesh.rotation.y += 0.05;
   const delta = clock.getDelta();
   cameraControls.update(delta);
-  box.rotation.y += 0.01
+  box.rotation.y += 0.01;
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }

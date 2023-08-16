@@ -31109,6 +31109,54 @@ class Spherical {
 
 }
 
+class GridHelper extends LineSegments {
+
+	constructor( size = 10, divisions = 10, color1 = 0x444444, color2 = 0x888888 ) {
+
+		color1 = new Color( color1 );
+		color2 = new Color( color2 );
+
+		const center = divisions / 2;
+		const step = size / divisions;
+		const halfSize = size / 2;
+
+		const vertices = [], colors = [];
+
+		for ( let i = 0, j = 0, k = - halfSize; i <= divisions; i ++, k += step ) {
+
+			vertices.push( - halfSize, 0, k, halfSize, 0, k );
+			vertices.push( k, 0, - halfSize, k, 0, halfSize );
+
+			const color = i === center ? color1 : color2;
+
+			color.toArray( colors, j ); j += 3;
+			color.toArray( colors, j ); j += 3;
+			color.toArray( colors, j ); j += 3;
+			color.toArray( colors, j ); j += 3;
+
+		}
+
+		const geometry = new BufferGeometry();
+		geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
+
+		const material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
+
+		super( geometry, material );
+
+		this.type = 'GridHelper';
+
+	}
+
+	dispose() {
+
+		this.geometry.dispose();
+		this.material.dispose();
+
+	}
+
+}
+
 class AxesHelper extends LineSegments {
 
 	constructor( size = 1 ) {
@@ -33808,6 +33856,8 @@ const subsetOfTHREE = {
 
 const camera = new PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 2;
+camera.position.x = 6;
+camera.position.y = 4;
 
 CameraControls.install({ THREE: subsetOfTHREE });
 
@@ -33819,7 +33869,7 @@ cameraControls.dollyToCursor = true;
 const scene = new Scene();
 
 // 2 The Object
-const geometry = new BoxGeometry(3,3,3);
+const geometry = new BoxGeometry(3, 3, 3);
 
 new TextureLoader();
 
@@ -33834,18 +33884,16 @@ axes.material.depthTest = false;
 axes.renderOrder = 2;
 scene.add(axes);
 
-
-const cubeAxes = new AxesHelper(0.5);
-cubeAxes.material.depthTest = false;
-cubeAxes.renderOrder = 2;
-box.add(cubeAxes);
-
-
-
+const grid = new GridHelper();
+grid.material.depthTest = false;
+grid.renderOrder = 2;
+scene.add(grid);
 
 const renderer = new WebGLRenderer({
   canvas,
 });
+// to change the background color use the code below
+renderer.setClearColor(0x3e3e3e, 1);
 scene.add(camera);
 
 renderer.setSize(sizes.width, sizes.height);
